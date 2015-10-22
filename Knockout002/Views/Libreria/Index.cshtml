@@ -1,0 +1,120 @@
+﻿@model Knockout002.Models.Libreria
+@using PerpetuumSoft.Knockout
+@{
+    ViewBag.Title = "Index";
+    var ko = Html.CreateKnockoutContext();
+}
+
+<div class="container">
+    <h2 style="text-align: center">Librería</h2>
+    <table class="table table-bordered table-striped table-condensed
+    table-hover">
+        <thead>
+            <tr>
+                <th>Titulo</th>
+                <th>Autor</th>
+                <th>Año</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        @*<tbody data-bind="foreach: Books">
+                <tr>
+                    <td data-bind="text: Titulo"></td>
+                    <td data-bind="text: Autor"></td>
+                    <td data-bind="text: Año"></td>
+                    <td>
+                        <a href="#" data-bind="click: $root.edit" class="btn
+                btn-primary btn-xs">Edit</a>
+                        <a href="#" data-bind="click: $root.remove" class="btn
+                btn-primary btn-xs">Remove</a>
+                    </td>
+                </tr>
+            </tbody>*@
+        <tbody>
+            @using (var book = ko.Foreach(m => m.Books))
+            {
+                <tr>
+                    <td>@book.Html.Span(m => m.Title)</td>
+                    <td>@book.Html.Span(m => m.Author)</td>
+                    <td>@book.Html.Span(m => m.Year)</td>
+                    <td>
+                        <a href="#" @ko.Bind.Click("EditRedirect", "Library", new { index = book.GetIndex() }) class="btn btn-
+              primary btn-xs">Edit</a>
+                        <a href="#" @ko.Bind.Click("Remove", "Library", new { index = book.GetIndex() }) class="btn btn-primary
+              btn-xs">Remove</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <a href="#" data-bind="click: add" class="btn btn-primary">
+        Add
+        new book
+    </a>
+</div>
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<script src="~/Scripts/knockout-3.3.0.js"></script>
+<script type="text/javascript">
+  var libraryViewModel = function () {
+    var self = this;
+    self.Name = ko.observable();
+    self.Books = ko.observableArray();
+    // Initial data
+    $.ajax({
+        url: '@Url.Action("GetName")',
+        cache: false,
+        type: 'GET',
+        contentType: 'application/json; charset=utf-8',
+        data: {},
+        success: function (data) {
+            self.Name(data);
+        }
+    });
+      $.ajax({
+          url: '@Url.Action("GetBooks")',
+          cache: false,
+          type: 'GET',
+          contentType: 'application/json; charset=utf-8',
+          data: {},
+          success: function (data) {
+              self.Books(data);
+          }
+      });
+      // Remove
+      self.remove = function (book) {
+          var id = book.Id;
+          $.ajax({
+              url: '@Url.Action("Remove")',
+              cache: false,
+              type: 'POST',
+              contentType: 'application/json; charset=utf-8',
+              data: JSON.stringify({ id: id }),
+              dataType: "json",
+              success: function (data) {
+                  self.Books(data);
+              }
+          });
+      }
+      // Add
+      self.add = function () {
+          $.ajax({
+              url: '@Url.Action("Add")',
+              cache: false,
+              type: 'GET',
+              contentType: 'application/json; charset=utf-8',
+              data: {},
+              success: function (data) {
+                  self.Books(data);
+              }
+          });
+      }
+          // Edit
+    self.edit = function (book) {
+      var id = book.Id;
+      location.href = "Edit/" + id;
+    }
+  }
+  // Applying bindings
+  ko.applyBindings(new libraryViewModel());
+</script>
